@@ -1,0 +1,64 @@
+[package]
+name = "puzzle"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.94.0"
+default-run = "puzzle"
+
+[features]
+trace_tracy = ["bevy/trace_tracy"]
+
+[dependencies]
+bevy_egui = { version = "0.39", default-features = false, features = ["bevy_ui"] }
+egui = "0.33"
+
+[dependencies.bevy]
+version = "0.18"
+default-features = false
+features = [
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_asset",
+    "bevy_gltf",
+    "bevy_state",
+    "bevy_render",
+    "bevy_picking",
+    "bevy_pbr",
+    "bevy_gizmos",
+    "bevy_gizmos_render",
+    "bevy_ui",
+    "bevy_ui_render",
+    "bevy_window",
+    "free_camera",
+    "gltf_animation",
+    "multi_threaded",
+    "mesh_picking",
+    "png",
+    "reflect_auto_register",
+    "trace",
+    "ui_picking",
+    "webgl2",
+]
+
+[dependencies.bevy-inspector-egui]
+version = "0.36"
+default-features = false
+features = [
+    "bevy_render"
+]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 'z'
+lto = true
+panic = 'abort'
+strip = true
+
+[lints.clippy]
+too_many_arguments = "allow"
+type_complexity = "allow"
