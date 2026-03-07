@@ -1,11 +1,11 @@
 use bevy::app::App;
 
-use puzzle::PuzzlePlugin;
+use puzzle::MainPlugin;
 
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(PuzzlePlugin);
+    app.add_plugins(MainPlugin);
 
     app.run();
 }

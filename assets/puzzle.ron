@@ -1,0 +1,22 @@
+PuzzleDef(
+    parts: {
+        "z-main": Zone(
+            state: Current,
+            camera: (Vec3(0.0, 2.0, -4.0), Vec3(0.0, 1.0, 4.0)),
+        ),
+        "z-hanging-key": Zone(
+            state: Open,
+            active_in: ["z-main"],
+            back_to: Some("z-main"),
+            camera: (Vec3(-1.0, 2.0, 3.0), Vec3(-2.0, 2.0, 4.0)),
+            clickable: (Vec3(-2.0, 1.9, 4.0), 0.5),
+        ),
+        "z-chest": Zone(
+            state: Open,
+            active_in: ["z-main"],
+            back_to: Some("z-main"),
+            camera: (Vec3(1.0, 2.0, 0.0), Vec3(2.0, 1.0, 4.0)),
+            clickable: (Vec3(2.0, 1.0, 4.0), 2.5),
+        ),
+    }
+)

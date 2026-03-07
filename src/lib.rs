@@ -1,5 +1,8 @@
+mod clickable;
 mod plugin;
+mod puzzle;
+mod puzzle_def;
 mod utils;
-mod zoomable;
+mod zone;
 
-pub use plugin::PuzzlePlugin;
+pub use plugin::MainPlugin;

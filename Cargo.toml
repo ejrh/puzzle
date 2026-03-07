@@ -11,6 +11,9 @@ trace_tracy = ["bevy/trace_tracy"]
 [dependencies]
 bevy_egui = { version = "0.39", default-features = false, features = ["bevy_ui"] }
 egui = "0.33"
+ron = "0.12"
+serde = "1.0"
+thiserror = "2.0"
 
 [dependencies.bevy]
 version = "0.18"

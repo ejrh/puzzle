@@ -1,5 +1,5 @@
 use bevy::app::{App, Plugin, Startup, Update};
-use bevy::asset::{AssetServer};
+use bevy::asset::AssetServer;
 use bevy::camera::Camera3d;
 use bevy::camera_controller::free_camera::{FreeCamera, FreeCameraPlugin};
 use bevy::core_pipeline::tonemapping::Tonemapping;
@@ -10,12 +10,14 @@ use bevy::math::{Dir3, Vec3};
 use bevy::prelude::{Component, MeshPickingPlugin, Name, Query, Transform, With};
 use bevy::time::Time;
 
+use crate::clickable::ClickablePlugin;
+use crate::puzzle::{Puzzle, PuzzlePlugin};
 use crate::utils::{UtilsPlugin, named_scene::NamedScene};
-use crate::zoomable::{UnzoomTo, Zoomable, ZoomableCamera, ZoomablePlugin};
+use crate::zone::ZonePlugin;
 
-pub struct PuzzlePlugin;
+pub struct MainPlugin;
 
-impl Plugin for PuzzlePlugin {
+impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_plugins(DefaultPlugins)
@@ -30,7 +32,10 @@ impl Plugin for PuzzlePlugin {
 
         app.add_systems(Update, animate_stuff);
 
-        app.add_plugins(ZoomablePlugin);
+        app
+            .add_plugins(ClickablePlugin)
+            .add_plugins(PuzzlePlugin)
+            .add_plugins(ZonePlugin);
     }
 }
 
@@ -72,25 +77,13 @@ fn setup_puzzle(
         Rotating,
     ));
 
-    let puzzle_zoomable_id = commands.spawn((
+    const PUZZLE_PATH: &str = "puzzle.ron";
+
+    let puzzle_def = asset_server.load(PUZZLE_PATH);
+
+    commands.spawn((
+        Puzzle(puzzle_def),
         Name::new("Puzzle"),
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        Zoomable(1.0),
-        ZoomableCamera(Transform::from_xyz(0.0, 2.0, -4.0).looking_at(Vec3::new(0.0, 1.0, 4.0), Vec3::Y)),
-    )).id();
-    commands.spawn((
-        Name::new("Chest"),
-        Transform::from_xyz(2.0, 1.0, 4.0),
-        Zoomable(1.5),
-        ZoomableCamera(Transform::from_xyz(1.0, 2.0, 0.0).looking_at(Vec3::new(2.0, 1.0, 4.0), Vec3::Y)),
-        UnzoomTo(puzzle_zoomable_id),
-    ));
-    commands.spawn((
-        Name::new("Key"),
-        Transform::from_xyz(-2.0, 2.0, 4.0),
-        Zoomable(0.5),
-        ZoomableCamera(Transform::from_xyz(-1.0, 2.0, 3.0).looking_at(Vec3::new(-2.0, 2.0, 4.0), Vec3::Y)),
-        UnzoomTo(puzzle_zoomable_id),
     ));
 }
 
