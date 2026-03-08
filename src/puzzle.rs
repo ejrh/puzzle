@@ -8,9 +8,9 @@ use bevy::prelude::{on_message, ChildOf, Commands, Component, Entity, IntoSchedu
 
 use crate::clickable::Clickable;
 use crate::item::{Item, Rotating};
-use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef};
+use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef, ZoneState};
 use crate::utils::named_scene::NamedScene;
-use crate::zone::{ActiveInZones, UnzoomTo, Zone, ZoneCamera};
+use crate::zone::{ActiveInZones, CurrentZone, UnzoomTo, Zone, ZoneCamera};
 
 pub struct PuzzlePlugin;
 
@@ -82,6 +82,10 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
         commands.entity(zone_id).insert((
             UnzoomTo(name_map[back_to]),
         ));
+    }
+
+    if matches!(zone_def.state, ZoneState::Current) {
+        commands.insert_resource(CurrentZone(Some(zone_id)));
     }
 }
 

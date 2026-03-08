@@ -16,7 +16,7 @@ impl Plugin for ZonePlugin {
 }
 
 #[derive(Default, Resource)]
-pub struct CurrentZone(Option<Entity>);
+pub struct CurrentZone(pub Option<Entity>);
 
 #[derive(Component, Reflect)]
 pub struct Zone;
@@ -41,15 +41,20 @@ fn add_zones(
 
 fn on_zoom(
     event: On<Pointer<Click>>,
-    zones: Query<(&ZoneCamera, &Name)>,
+    zones: Query<(&ZoneCamera, &Name, &ActiveInZones)>,
     mut current: ResMut<CurrentZone>,
     camera_id: Single<Entity, With<Camera>>,
     mut command: Commands,
 ) {
     if !matches!(event.event.button, PointerButton::Primary) { return }
 
-    let Ok((zone_camera, name)) = zones.get(event.event_target())
+    let Ok((zone_camera, name, active_in)) = zones.get(event.event_target())
     else { return; };
+
+    let Some(current_id) = current.0
+    else { return };
+
+    if !active_in.0.contains(&current_id) { return };
 
     info!("Clicked zone: {name}");
 

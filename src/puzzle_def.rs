@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::asset::{Asset, AssetLoader, LoadContext};
 use bevy::asset::io::Reader;
-use bevy::math::{Quat, Vec3};
+use bevy::math::Vec3;
 use bevy::prelude::Reflect;
 use bevy::reflect::TypePath;
 use serde::Deserialize;
