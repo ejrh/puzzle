@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 use bevy::app::{App, Plugin, Update};
-use bevy::asset::{AssetApp, AssetEvent, Assets, Handle};
+use bevy::asset::{AssetApp, AssetEvent, AssetServer, Assets, Handle};
 use bevy::log::info;
 use bevy::math::Dir3;
 use bevy::prelude::{on_message, ChildOf, Commands, Component, Entity, IntoScheduleConfigs, MessageReader, Name, Query, Reflect, Res, Transform, Visibility};
 
 use crate::clickable::Clickable;
-use crate::puzzle_def::{PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef};
+use crate::item::{Item, Rotating};
+use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef};
+use crate::utils::named_scene::NamedScene;
 use crate::zone::{ActiveInZones, UnzoomTo, Zone, ZoneCamera};
 
 pub struct PuzzlePlugin;
@@ -30,6 +32,7 @@ fn check_puzzle_loaded(
     assets: Res<Assets<PuzzleDef>>,
     puzzles: Query<(Entity, &Puzzle)>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     let loaded_puzzles: Vec<_> = asset_events.read().filter_map(
         |e| if let AssetEvent::LoadedWithDependencies { id } = e { Some(*id) } else { None }
@@ -38,12 +41,12 @@ fn check_puzzle_loaded(
     for (puzzle_id, puzzle) in puzzles {
         if loaded_puzzles.contains(&puzzle.0.id()) {
             let def = assets.get(puzzle.0.id()).unwrap();
-            construct_puzzle(puzzle_id, def, &mut commands);
+            construct_puzzle(puzzle_id, def, &mut commands, &asset_server);
         }
     }
 }
 
-fn construct_puzzle(puzzle_id: Entity, def: &PuzzleDef, commands: &mut Commands) {
+fn construct_puzzle(puzzle_id: Entity, def: &PuzzleDef, commands: &mut Commands, asset_server: &AssetServer) {
     info!("Constructing puzzle");
 
     let name_map: HashMap<String, Entity> = def.parts.keys().map(
@@ -54,7 +57,8 @@ fn construct_puzzle(puzzle_id: Entity, def: &PuzzleDef, commands: &mut Commands)
         let part_id = name_map[name];
 
         match part {
-            PartDef::Zone(zone_def) => construct_zone(name, part_id, zone_def, &name_map, commands)
+            PartDef::Zone(zone_def) => construct_zone(name, part_id, zone_def, &name_map, commands),
+            PartDef::Item(item_def) => construct_item(name, part_id, item_def, &name_map, commands, asset_server),
         };
     }
 }
@@ -77,6 +81,29 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
     if let Some(back_to) = &zone_def.back_to {
         commands.entity(zone_id).insert((
             UnzoomTo(name_map[back_to]),
+        ));
+    }
+}
+
+fn construct_item(name: &str, item_id: Entity, item_def: &ItemDef, name_map: &HashMap<String, Entity>, commands: &mut Commands,
+                  asset_server: &AssetServer) {
+    info!("Constructing item: {} (entity {})", name, item_id);
+
+    let Some((gltf_path, scene_name)) = item_def.gltf_scene.split_once('#')
+    else { panic!() };
+
+    let gltf = asset_server.load(gltf_path.to_owned());
+
+    commands.entity(item_id).insert((
+        Item,
+        ActiveInZones(item_def.active_in.iter().map(|n| name_map[n]).collect()),
+        Transform::from_translation(item_def.position),
+        Visibility::default(),
+        NamedScene { gltf, scene_name: scene_name.to_owned() },
+    ));
+    if matches!(item_def.decoration, ItemDecoration::Rotating) {
+        commands.entity(item_id).insert((
+            Rotating,
         ));
     }
 }

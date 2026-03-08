@@ -17,6 +17,7 @@ pub struct PuzzleDef {
 #[derive(Deserialize, Reflect)]
 pub enum PartDef {
     Zone(ZoneDef),
+    Item(ItemDef),
 }
 
 #[derive(Deserialize, Reflect)]
@@ -35,6 +36,31 @@ pub enum ZoneState {
     Locked,
     Open,
     Current,
+}
+
+#[derive(Deserialize, Reflect)]
+pub struct ItemDef {
+    pub position: Vec3,
+    pub gltf_scene: String,
+    pub state: ItemState,
+    #[serde(default)]
+    pub active_in: Vec<String>,
+    #[serde(default)]
+    pub decoration: ItemDecoration,
+}
+
+#[derive(Deserialize, Reflect)]
+pub enum ItemState {
+    Locked,
+    Open,
+    Active,
+}
+
+#[derive(Default, Deserialize, Reflect)]
+pub enum ItemDecoration {
+    #[default]
+    None,
+    Rotating,
 }
 
 #[derive(Default, TypePath)]

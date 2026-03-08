@@ -18,5 +18,22 @@ PuzzleDef(
             camera: (Vec3(1.0, 2.0, 0.0), Vec3(2.0, 1.0, 4.0)),
             clickable: (Vec3(2.0, 1.0, 4.0), 2.5),
         ),
+        "i-key": Item(
+            position: Vec3(-2.0, 1.5, 4.0),
+            gltf_scene: "puzzle.gltf#Key",
+            state: Open,
+            active_in: ["z-hanging-key"],
+            decoration: Rotating,
+        ),
+        "i-chest": Item(
+            position: Vec3(2.0, 0.0, 4.0),
+            gltf_scene: "puzzle.gltf#Chest",
+            state: Locked,
+        ),
+        "i-lid": Item(
+            position: Vec3(2.0, 0.0, 4.0),
+            gltf_scene: "puzzle.gltf#Lid",
+            state: Locked,
+        ),
     }
 )
