@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bevy::app::{App, Plugin, Update};
 use bevy::asset::{AssetApp, AssetEvent, AssetServer, Assets, Handle};
 use bevy::log::info;
-use bevy::math::Dir3;
+use bevy::math::{Dir3, Quat};
 use bevy::prelude::{on_message, ChildOf, Commands, Component, Entity, IntoScheduleConfigs, MessageReader, Name, Query, Reflect, Res, Transform, Visibility};
 
 use crate::clickable::Clickable;
@@ -97,7 +97,7 @@ fn construct_item(name: &str, item_id: Entity, item_def: &ItemDef, name_map: &Ha
     commands.entity(item_id).insert((
         Item,
         ActiveInZones(item_def.active_in.iter().map(|n| name_map[n]).collect()),
-        Transform::from_translation(item_def.position),
+        Transform::from_translation(item_def.position).with_rotation(Quat::from_scaled_axis(item_def.rotation)),
         Visibility::default(),
         NamedScene { gltf, scene_name: scene_name.to_owned() },
     ));

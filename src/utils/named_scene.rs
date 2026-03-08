@@ -1,10 +1,10 @@
 use bevy::asset::{AssetEvent, Assets, Handle};
 use bevy::gltf::Gltf;
 use bevy::log::warn;
-use bevy::prelude::{Changed, Commands, Component, Entity, MessageReader, Query, Res};
+use bevy::prelude::{Changed, Commands, Component, Entity, MessageReader, Query, Reflect, Res};
 use bevy::scene::SceneRoot;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct NamedScene {
     pub gltf: Handle<Gltf>,
     pub scene_name: String,

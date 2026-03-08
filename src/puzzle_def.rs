@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::asset::{Asset, AssetLoader, LoadContext};
 use bevy::asset::io::Reader;
-use bevy::math::Vec3;
+use bevy::math::{Quat, Vec3};
 use bevy::prelude::Reflect;
 use bevy::reflect::TypePath;
 use serde::Deserialize;
@@ -41,6 +41,8 @@ pub enum ZoneState {
 #[derive(Deserialize, Reflect)]
 pub struct ItemDef {
     pub position: Vec3,
+    #[serde(default)]
+    pub rotation: Vec3,
     pub gltf_scene: String,
     pub state: ItemState,
     #[serde(default)]
