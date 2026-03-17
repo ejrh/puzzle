@@ -11,9 +11,9 @@ use bevy::prelude::{MeshPickingPlugin, Name, Transform};
 
 use crate::clickable::ClickablePlugin;
 use crate::item::ItemPlugin;
+use crate::logic::LogicPlugin;
 use crate::puzzle::{Puzzle, PuzzlePlugin};
 use crate::utils::UtilsPlugin;
-use crate::zone::ZonePlugin;
 
 pub struct MainPlugin;
 
@@ -33,8 +33,8 @@ impl Plugin for MainPlugin {
         app
             .add_plugins(ClickablePlugin)
             .add_plugins(ItemPlugin)
-            .add_plugins(PuzzlePlugin)
-            .add_plugins(ZonePlugin);
+            .add_plugins(LogicPlugin)
+            .add_plugins(PuzzlePlugin);
     }
 }
 

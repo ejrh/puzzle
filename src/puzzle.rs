@@ -8,9 +8,10 @@ use bevy::prelude::{on_message, ChildOf, Commands, Component, Entity, IntoSchedu
 
 use crate::clickable::Clickable;
 use crate::item::{Item, Rotating};
-use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef, ZoneState};
+use crate::logic::LogicMessage;
+use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef};
 use crate::utils::named_scene::NamedScene;
-use crate::zone::{ActiveInZones, CurrentZone, UnzoomTo, Zone, ZoneCamera};
+use crate::zone::{Zone, ZoneCamera};
 
 pub struct PuzzlePlugin;
 
@@ -61,6 +62,8 @@ fn construct_puzzle(puzzle_id: Entity, def: &PuzzleDef, commands: &mut Commands,
             PartDef::Item(item_def) => construct_item(name, part_id, item_def, &name_map, commands, asset_server),
         };
     }
+
+    commands.write_message(LogicMessage::CreatedPuzzle(puzzle_id));
 }
 
 fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &HashMap<String, Entity>, commands: &mut Commands) {
@@ -68,7 +71,6 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
 
     commands.entity(zone_id).insert((
         Zone,
-        ActiveInZones(zone_def.active_in.iter().map(|n| name_map[n]).collect()),
         Transform::from_translation(zone_def.clickable.0),
         Visibility::default(),
         ZoneCamera(Transform::from_translation(zone_def.camera.0).looking_at(zone_def.camera.1, Dir3::Y)),
@@ -77,15 +79,6 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
         commands.entity(zone_id).insert((
             Clickable(zone_def.clickable.1),
         ));
-    }
-    if let Some(back_to) = &zone_def.back_to {
-        commands.entity(zone_id).insert((
-            UnzoomTo(name_map[back_to]),
-        ));
-    }
-
-    if matches!(zone_def.state, ZoneState::Current) {
-        commands.insert_resource(CurrentZone(Some(zone_id)));
     }
 }
 
@@ -100,7 +93,6 @@ fn construct_item(name: &str, item_id: Entity, item_def: &ItemDef, name_map: &Ha
 
     commands.entity(item_id).insert((
         Item,
-        ActiveInZones(item_def.active_in.iter().map(|n| name_map[n]).collect()),
         Transform::from_translation(item_def.position).with_rotation(Quat::from_scaled_axis(item_def.rotation)),
         Visibility::default(),
         NamedScene { gltf, scene_name: scene_name.to_owned() },

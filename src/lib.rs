@@ -1,5 +1,6 @@
 mod clickable;
 mod item;
+mod logic;
 mod plugin;
 mod puzzle;
 mod puzzle_def;

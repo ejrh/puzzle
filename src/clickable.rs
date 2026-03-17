@@ -1,11 +1,14 @@
 use bevy::app::{App, Plugin, Startup, Update};
 use bevy::asset::{Assets, Handle};
 use bevy::color::Color;
+use bevy::log::warn;
 use bevy::math::Vec3;
 use bevy::mesh::{Mesh, Mesh3d, Meshable};
 use bevy::pbr::{MeshMaterial3d, StandardMaterial};
-use bevy::prelude::{Added, Commands, Component, Entity, EntityEvent, On, Out, Over, Pointer, Query, Res, ResMut, Resource, Sphere, Transform, Visibility};
+use bevy::prelude::{Added, Click, Commands, Component, Entity, EntityEvent, On, Out, Over, Pointer, PointerButton, Query, Res, ResMut, Resource, Sphere, Transform, Visibility, With};
 use bevy::reflect::Reflect;
+
+use crate::logic::LogicMessage;
 
 pub struct ClickablePlugin;
 
@@ -13,6 +16,8 @@ impl Plugin for ClickablePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_clickables);
         app.add_systems(Update, add_clickables);
+
+        app.add_observer(on_click);
     }
 }
 
@@ -63,4 +68,19 @@ fn update_material_on<E: EntityEvent>(
             material.0 = new_material.clone();
         }
     }
+}
+
+fn on_click(
+    event: On<Pointer<Click>>,
+    clickables: Query<(), With<Clickable>>,
+    mut command: Commands,
+) {
+    let target = event.entity;
+    let primary = matches!(event.event.button, PointerButton::Primary);
+
+    if !clickables.contains(target) {
+        warn!("not clickable");
+    }
+
+    command.write_message(LogicMessage::Clicked(target, primary));
 }
