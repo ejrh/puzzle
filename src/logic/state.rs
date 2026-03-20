@@ -35,7 +35,7 @@ impl LogicState {
                 self.current_zone = name.into();
                 return vec![
                     Instruction::Constant(Constant::Entity(entity)),
-                    Instruction::Constant(Constant::Float(2.0)),
+                    Instruction::Constant(Constant::Float(4.0)),
                     Instruction::MoveToZone,
                 ];
             }
@@ -49,7 +49,7 @@ impl LogicState {
 
                 return vec![
                     Instruction::Lookup("z-main".into()),
-                    Instruction::Constant(Constant::Float(0.5)),
+                    Instruction::Constant(Constant::Float(2.0)),
                     Instruction::MoveToZone,
                 ];
             }

@@ -73,7 +73,7 @@ pub fn move_to_zone(
     let camera_id = *camera;
 
     commands.entity(camera_id).insert(
-        CameraMovingTo(zone_camera.0, duration),
+        CameraMovingTo::new(zone_camera.0, duration),
     );
 
     Ok(())

@@ -1,7 +1,18 @@
-use bevy::prelude::{Commands, Component, Entity, Query, Res, Time, Transform};
+use bevy::math::Curve;
+use bevy::prelude::{Commands, Component, EaseFunction, EasingCurve, Entity, Query, Res, Time, Transform};
 
 #[derive(Component)]
-pub struct CameraMovingTo(pub Transform, pub f32);
+pub struct CameraMovingTo {
+    target: Transform,
+    duration: f32,
+    elapsed: f32,
+}
+
+impl CameraMovingTo {
+    pub fn new(target: Transform, duration: f32) -> CameraMovingTo {
+        CameraMovingTo { target, duration, elapsed: 0.0 }
+    }
+}
 
 pub fn camera_move(
     cameras: Query<(Entity, &mut Transform, &mut CameraMovingTo)>,
@@ -9,11 +20,11 @@ pub fn camera_move(
     mut commands: Commands,
 ) {
     for (id, mut transform, mut moving_to) in cameras {
-        let portion = (time.delta_secs() / moving_to.1).min(1.0);
-        transform.translation = transform.translation.lerp(moving_to.0.translation, portion);
-        transform.rotation = transform.rotation.slerp(moving_to.0.rotation, portion);
-        moving_to.1 -= time.delta_secs();
-        if moving_to.1 <= 0.0 {
+        moving_to.elapsed += time.delta_secs();
+        let portion = (moving_to.elapsed / moving_to.duration).clamp(0.0, 1.0);
+        transform.translation = EasingCurve::new(transform.translation, moving_to.target.translation, EaseFunction::QuadraticInOut).sample_unchecked(portion);
+        transform.rotation = EasingCurve::new(transform.rotation, moving_to.target.rotation, EaseFunction::QuadraticInOut).sample_unchecked(portion);
+        if portion >= 1.0 {
             commands.entity(id).remove::<CameraMovingTo>();
         }
     }
