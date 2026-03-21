@@ -4,6 +4,7 @@ use bevy::app::{App, Plugin, Update};
 use bevy::asset::{AssetApp, AssetEvent, AssetServer, Assets, Handle};
 use bevy::log::info;
 use bevy::math::{Dir3, Quat};
+use bevy::picking::Pickable;
 use bevy::prelude::{on_message, ChildOf, Commands, Component, Entity, IntoScheduleConfigs, MessageReader, Name, Query, Reflect, Res, Transform, Visibility};
 
 use crate::clickable::Clickable;
@@ -77,6 +78,7 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
     ));
     if zone_def.clickable.1 >= 0.0 {
         commands.entity(zone_id).insert((
+            Pickable { should_block_lower: false, is_hoverable: true },
             Clickable(zone_def.clickable.1),
         ));
     }
