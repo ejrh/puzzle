@@ -5,7 +5,7 @@ use bevy::prelude::{BevyError, Commands, Entity, In, MessageReader, Name, Query,
 use crate::logic::action::{Constant, Instruction};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
-use crate::utils::camera_move::CameraMovingTo;
+use crate::utils::movement::MovingTo;
 use crate::zone::ZoneCamera;
 
 pub fn check_logic(
@@ -73,7 +73,7 @@ pub fn move_to_zone(
     let camera_id = *camera;
 
     commands.entity(camera_id).insert(
-        CameraMovingTo::new(zone_camera.0, duration),
+        MovingTo::new(zone_camera.0, duration),
     );
 
     Ok(())
