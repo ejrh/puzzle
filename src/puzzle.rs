@@ -12,7 +12,7 @@ use crate::item::{Item, Rotating};
 use crate::logic::LogicMessage;
 use crate::puzzle_def::{ItemDecoration, ItemDef, PartDef, PuzzleDef, PuzzleDefLoader, ZoneDef};
 use crate::utils::named_scene::NamedScene;
-use crate::zone::{Zone, ZoneCamera};
+use crate::zone::Zone;
 
 pub struct PuzzlePlugin;
 
@@ -72,14 +72,16 @@ fn construct_zone(name: &str, zone_id: Entity, zone_def: &ZoneDef, name_map: &Ha
 
     commands.entity(zone_id).insert((
         Zone,
-        Transform::from_translation(zone_def.clickable.0),
+        Transform::from_translation(zone_def.position.translation).looking_at(zone_def.position.looking_at, Dir3::Y),
         Visibility::default(),
-        ZoneCamera(Transform::from_translation(zone_def.camera.0).looking_at(zone_def.camera.1, Dir3::Y)),
     ));
-    if zone_def.clickable.1 >= 0.0 {
-        commands.entity(zone_id).insert((
+
+    if let Some(clickable) = &zone_def.clickable {
+        commands.spawn((
             Pickable { should_block_lower: false, is_hoverable: true },
-            Clickable(zone_def.clickable.1),
+            Clickable(clickable.radius),
+            ChildOf(zone_id),
+            Transform::from_translation(clickable.position),
         ));
     }
 }

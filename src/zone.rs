@@ -1,7 +1,4 @@
-use bevy::prelude::{Component, Reflect, Transform};
+use bevy::prelude::{Component, Reflect};
 
 #[derive(Component, Reflect)]
 pub struct Zone;
-
-#[derive(Component, Reflect)]
-pub struct ZoneCamera(pub Transform);

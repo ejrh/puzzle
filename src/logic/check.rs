@@ -1,12 +1,10 @@
-use bevy::camera::Camera;
 use bevy::log::{info, warn};
-use bevy::prelude::{BevyError, Commands, Entity, In, MessageReader, Name, Query, ResMut, Single, With, World};
+use bevy::prelude::{BevyError, Commands, Entity, In, MessageReader, Name, Query, ResMut, Transform, World};
 
 use crate::logic::action::{Constant, Instruction};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
 use crate::utils::movement::MovingTo;
-use crate::zone::ZoneCamera;
 
 pub fn check_logic(
     mut messages: MessageReader<LogicMessage>,
@@ -51,29 +49,29 @@ pub fn run_actions(
             Instruction::Constant(constant) => {
                 stack.push(constant.clone());
             },
-            Instruction::MoveToZone => {
+            Instruction::MoveTo => {
                 let Some(Constant::Float(duration)) = stack.pop()
                     else { warn!("Stack does not contain a float"); return; };
-                let Some(Constant::Entity(zone_id)) = stack.pop()
+                let Some(Constant::Entity(target_id)) = stack.pop()
                     else { warn!("Stack does not contain an entity"); return; };
-                world.commands().run_system_cached_with(move_to_zone, (zone_id, duration));
-            },
+                let Some(Constant::Entity(entity_id)) = stack.pop()
+                    else { warn!("Stack does not contain an entity"); return; };
+                world.commands().run_system_cached_with(move_to, (entity_id, target_id, duration));
+            }
         }
     }
 }
 
-pub fn move_to_zone(
-    input: In<(Entity, f32)>,
-    zones: Query<&ZoneCamera>,
-    camera: Single<Entity, With<Camera>>,
+pub fn move_to(
+    input: In<(Entity, Entity, f32)>,
+    transforms: Query<&Transform>,
     mut commands: Commands,
 ) -> Result<(), BevyError> {
-    let (zone_id, duration) = *input;
-    let zone_camera = zones.get(zone_id)?;
-    let camera_id = *camera;
+    let (entity_id, target_id, duration) = *input;
+    let target = transforms.get(target_id)?;
 
-    commands.entity(camera_id).insert(
-        MovingTo::new(zone_camera.0, duration),
+    commands.entity(entity_id).insert(
+        MovingTo::new(*target, duration),
     );
 
     Ok(())

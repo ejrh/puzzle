@@ -1,9 +1,12 @@
+use bevy::prelude::ReflectResource;
 use bevy::log::info;
 use bevy::prelude::{Entity, Resource};
+use bevy::reflect::Reflect;
 
 use crate::logic::action::{Constant, Instruction};
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Reflect)]
+#[reflect(Resource)]
 pub struct LogicState {
     puzzle_id: Entity,
     current_zone: String,
@@ -22,39 +25,34 @@ impl LogicState {
     pub fn created(&mut self, entity: Entity) -> Vec<Instruction> {
         self.puzzle_id = entity;
         self.current_zone = "z-main".into();
-        vec![
-            Instruction::Lookup("z-main".into()),
-            Instruction::Constant(Constant::Float(1.0)),
-            Instruction::MoveToZone,
-        ]
+        self.move_to_zone("z-main", 1.0)
     }
 
     pub fn clicked(&mut self, entity: Entity, name: &str, primary: bool) -> Vec<Instruction> {
         if primary {
             if self.current_zone == "z-main" && (name == "z-hanging-key" || name == "z-chest") {
-                self.current_zone = name.into();
-                return vec![
-                    Instruction::Constant(Constant::Entity(entity)),
-                    Instruction::Constant(Constant::Float(4.0)),
-                    Instruction::MoveToZone,
-                ];
+                return self.move_to_zone(name, 4.0);
             }
 
             if self.current_zone == "z-hanging-key" && name == "i-key" {
                 info!("clicked key");
             }
         } else {
-            if self.current_zone == "z-hanging-key" || name == "z-chest" {
-                self.current_zone = "z-main".into();
-
-                return vec![
-                    Instruction::Lookup("z-main".into()),
-                    Instruction::Constant(Constant::Float(2.0)),
-                    Instruction::MoveToZone,
-                ];
+            if self.current_zone == "z-hanging-key" || self.current_zone == "z-chest" {
+                return self.move_to_zone("z-main", 2.0);
             }
         }
 
         Vec::new()
+    }
+
+    fn move_to_zone(&mut self, zone_name: &str, duration: f32) -> Vec<Instruction> {
+        self.current_zone = zone_name.into();
+        vec![
+            Instruction::Lookup("camera".into()),
+            Instruction::Lookup(zone_name.into()),
+            Instruction::Constant(Constant::Float(duration)),
+            Instruction::MoveTo,
+        ]
     }
 }

@@ -44,6 +44,7 @@ fn setup_camera(mut commands: Commands) {
         Tonemapping::None,
         Transform::from_xyz(0.0, 2.0, -4.0).looking_at(Vec3::new(0.0, 1.0, 4.0), Vec3::Y),
         FreeCamera::default(),
+        Name::new("camera"),
     ));
 }
 

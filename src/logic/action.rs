@@ -4,7 +4,7 @@ use bevy::prelude::Entity;
 pub enum Instruction {
     Lookup(String),
     Constant(Constant),
-    MoveToZone,
+    MoveTo,
 }
 
 #[derive(Clone, Debug, PartialEq)]

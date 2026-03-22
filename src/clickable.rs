@@ -1,3 +1,4 @@
+use bevy::prelude::ReflectResource;
 use bevy::app::{App, Plugin, Startup, Update};
 use bevy::asset::{Assets, Handle};
 use bevy::color::Color;
@@ -21,7 +22,8 @@ impl Plugin for ClickablePlugin {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct ClickableParams {
     sphere_mesh: Handle<Mesh>,
     visible_material: Handle<StandardMaterial>,
@@ -79,7 +81,7 @@ fn on_click(
     let primary = matches!(event.event.button, PointerButton::Primary);
 
     if !clickables.contains(target) {
-        warn!("not clickable");
+        warn!("not clickable: {}", target);
     }
 
     command.write_message(LogicMessage::Clicked(target, primary));
