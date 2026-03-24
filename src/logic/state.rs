@@ -10,6 +10,7 @@ use crate::logic::action::{Constant, Instruction};
 pub struct LogicState {
     puzzle_id: Entity,
     current_zone: String,
+    got_key: bool,
 }
 
 impl Default for LogicState {
@@ -17,6 +18,7 @@ impl Default for LogicState {
         LogicState {
             puzzle_id: Entity::PLACEHOLDER,
             current_zone: "".into(),
+            got_key: false,
         }
     }
 }
@@ -35,7 +37,7 @@ impl LogicState {
             }
 
             if self.current_zone == "z-hanging-key" && name == "i-key" {
-                info!("clicked key");
+                return self.pick_up_key();
             }
         } else {
             if self.current_zone == "z-hanging-key" || self.current_zone == "z-painting" || self.current_zone == "z-chest" {
@@ -52,6 +54,24 @@ impl LogicState {
             Instruction::Lookup("camera".into()),
             Instruction::Lookup(zone_name.into()),
             Instruction::Constant(Constant::Float(duration)),
+            Instruction::MoveTo,
+        ]
+    }
+
+    fn pick_up_key(&mut self) -> Vec<Instruction> {
+        info!("Picked up key");
+        self.got_key = true;
+        vec![
+            Instruction::Lookup("i-key".into()),
+            Instruction::Lookup("camera".into()),
+            Instruction::ReparentInPlace,
+
+            Instruction::Lookup("i-key".into()),
+            Instruction::RemoveDecoration,
+
+            Instruction::Lookup("i-key".into()),
+            Instruction::Lookup("hand".into()),
+            Instruction::Constant(Constant::Float(0.5)),
             Instruction::MoveTo,
         ]
     }

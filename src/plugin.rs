@@ -6,8 +6,8 @@ use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::DefaultPlugins;
 use bevy::ecs::system::{Res, Commands};
 use bevy::light::PointLight;
-use bevy::math::Vec3;
-use bevy::prelude::{MeshPickingPlugin, Name, Transform};
+use bevy::math::{EulerRot, Quat, Vec3};
+use bevy::prelude::{ChildOf, MeshPickingPlugin, Name, Transform};
 
 use crate::clickable::ClickablePlugin;
 use crate::item::ItemPlugin;
@@ -39,12 +39,18 @@ impl Plugin for MainPlugin {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((
+    let camera_id = commands.spawn((
         Camera3d::default(),
         Tonemapping::None,
         Transform::from_xyz(0.0, 2.0, 4.0).looking_at(Vec3::new(0.0, 1.0, -4.0), Vec3::Y),
         FreeCamera::default(),
         Name::new("camera"),
+    )).id();
+
+    commands.spawn((
+        Transform::from_xyz(0.6, 0.0, -1.3).with_rotation(Quat::from_euler(EulerRot::XYZ, 5.6, 0.2, 3.4)),
+        Name::new("hand"),
+        ChildOf(camera_id),
     ));
 }
 

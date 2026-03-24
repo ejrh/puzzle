@@ -1,6 +1,6 @@
 use bevy::log::{info, warn};
-use bevy::prelude::{BevyError, Commands, Entity, In, MessageReader, Name, Query, ResMut, Transform, World};
-
+use bevy::prelude::{BevyError, ChildOf, Commands, Entity, GlobalTransform, In, MessageReader, Name, Query, ResMut, Transform, World};
+use crate::item::Rotating;
 use crate::logic::action::{Constant, Instruction};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
@@ -57,7 +57,19 @@ pub fn run_actions(
                 let Some(Constant::Entity(entity_id)) = stack.pop()
                     else { warn!("Stack does not contain an entity"); return; };
                 world.commands().run_system_cached_with(move_to, (entity_id, target_id, duration));
-            }
+            },
+            Instruction::ReparentInPlace => {
+                let Some(Constant::Entity(new_parent_id)) = stack.pop()
+                else { warn!("Stack does not contain an entity"); return; };
+                let Some(Constant::Entity(entity_id)) = stack.pop()
+                else { warn!("Stack does not contain an entity"); return; };
+                world.commands().run_system_cached_with(reparent_in_place, (entity_id, new_parent_id));
+            },
+            Instruction::RemoveDecoration => {
+                let Some(Constant::Entity(entity_id)) = stack.pop()
+                else { warn!("Stack does not contain an entity"); return; };
+                world.commands().run_system_cached_with(remove_decoration, entity_id);
+            },
         }
     }
 }
@@ -73,6 +85,39 @@ pub fn move_to(
     commands.entity(entity_id).insert(
         MovingTo::new(*target, duration),
     );
+
+    Ok(())
+}
+
+pub fn reparent_in_place(
+    input: In<(Entity, Entity)>,
+    transforms: Query<&GlobalTransform>,
+    mut commands: Commands,
+) -> Result<(), BevyError> {
+    let (entity_id, new_parent_id) = *input;
+
+    let current_transform = transforms.get(entity_id)?;
+    let new_parent_transform = transforms.get(new_parent_id)?;
+
+    let local_transform = current_transform.reparented_to(new_parent_transform);
+
+    commands.entity(entity_id).insert((
+        local_transform,
+        ChildOf(new_parent_id),
+    ));
+
+    Ok(())
+}
+
+pub fn remove_decoration(
+    input: In<Entity>,
+    mut commands: Commands,
+) -> Result<(), BevyError> {
+    let entity_id = *input;
+
+    commands.entity(entity_id).remove::<(
+        Rotating,
+    )>();
 
     Ok(())
 }

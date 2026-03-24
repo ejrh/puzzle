@@ -5,6 +5,8 @@ pub enum Instruction {
     Lookup(String),
     Constant(Constant),
     MoveTo,
+    ReparentInPlace,
+    RemoveDecoration,
 }
 
 #[derive(Clone, Debug, PartialEq)]
