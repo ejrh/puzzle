@@ -1,54 +1,32 @@
 PuzzleDef(
+    initial_layout: "puzzle.gltf#PuzzleLayout",
     parts: {
         "z-main": Zone(
-            state: Current,
-            position: TransformLookingAt(
-                translation: Vec3(0.0, 2.0, -4.0),
-                looking_at: Vec3(0.0, 1.0, 4.0)
-            ),
         ),
         "z-hanging-key": Zone(
-            state: Open,
-            position: TransformLookingAt(
-                translation: Vec3(-1.0, 2.0, 1.5),
-                looking_at: Vec3(-2.0, 1.5, 2.5)
-            ),
             clickable: Clickable(
-                position: Vec3(0.0, 0.185, -1.45),
                 radius: 0.25,
             ),
         ),
         "z-chest": Zone(
-            state: Open,
-            position: TransformLookingAt(
-                translation: Vec3(1.0, 2.0, 0.0),
-                looking_at: Vec3(2.0, 0.5, 2.5)
-            ),
             clickable: Clickable(
-                position: Vec3(0.0, 0.0, -3.0),
                 radius: 1.5,
             ),
         ),
         "i-key": Item(
-            position: Vec3(-2.0, 1.5, 2.5),
             gltf_scene: "puzzle.gltf#Key",
             state: Open,
             decoration: Rotating,
         ),
         "i-chest": Item(
-            position: Vec3(2.0, 0.0, 2.5),
-            rotation: Vec3(0.0, 0.75, 0.0),
             gltf_scene: "puzzle.gltf#Chest",
             state: Locked,
         ),
         "i-lid": Item(
-            position: Vec3(2.0, 0.0, 2.5),
-            rotation: Vec3(0.0, 0.75, 0.0),
             gltf_scene: "puzzle.gltf#Lid",
             state: Locked,
         ),
         "p-floor": Item(
-            position: Vec3(0.0, 0.0, 0.0),
             gltf_scene: "puzzle.gltf#Floor",
             state: Locked,
         ),

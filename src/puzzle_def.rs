@@ -1,17 +1,22 @@
 use std::collections::HashMap;
 
-use bevy::asset::{Asset, AssetLoader, LoadContext};
+use bevy::asset::{Asset, AssetLoader, AssetPath, Handle, LoadContext};
 use bevy::asset::io::Reader;
-use bevy::math::Vec3;
-use bevy::prelude::Reflect;
+use bevy::gltf::Gltf;
+use bevy::math::{Dir3, Quat, Vec3};
+use bevy::prelude::{Reflect, Transform};
 use bevy::reflect::TypePath;
 use serde::Deserialize;
 use thiserror::Error;
 
 #[derive(Asset, Deserialize, Reflect)]
 pub struct PuzzleDef {
+    pub initial_layout: Option<AssetPath<'static>>,
     #[serde(default)]
     pub parts: HashMap<String, PartDef>,
+
+    #[serde(skip)]
+    pub initial_layout_handle: Option<Handle<Gltf>>,
 }
 
 #[derive(Deserialize, Reflect)]
@@ -22,23 +27,13 @@ pub enum PartDef {
 
 #[derive(Deserialize, Reflect)]
 pub struct ZoneDef {
-    pub state: ZoneState,
-    pub position: TransformLookingAt,
+    pub position: Option<Position>,
     pub clickable: Option<Clickable>,
 }
 
 #[derive(Deserialize, Reflect)]
-pub enum ZoneState {
-    Locked,
-    Open,
-    Current,
-}
-
-#[derive(Deserialize, Reflect)]
 pub struct ItemDef {
-    pub position: Vec3,
-    #[serde(default)]
-    pub rotation: Vec3,
+    pub position: Option<Position>,
     pub gltf_scene: String,
     pub state: ItemState,
     #[serde(default)]
@@ -63,14 +58,28 @@ pub enum ItemDecoration {
 
 #[derive(Deserialize, Reflect)]
 pub struct Clickable {
-    pub position: Vec3,
+    pub position: Option<Position>,
     pub radius: f32,
 }
 
 #[derive(Deserialize, Reflect)]
-pub struct TransformLookingAt {
+pub struct Position {
     pub translation: Vec3,
-    pub looking_at: Vec3,
+    pub looking_at: Option<Vec3>,
+    pub rotation: Option<Vec3>,
+}
+
+impl Position {
+    pub fn to_transform(&self) -> Transform {
+        let mut tf = Transform::from_translation(self.translation);
+        if let Some(looking_at) = self.looking_at {
+            tf = tf.looking_at(looking_at, Dir3::Y);
+        }
+        if let Some(rotation) = self.rotation {
+            tf = tf.with_rotation(Quat::from_scaled_axis(rotation));
+        }
+        tf
+    }
 }
 
 #[derive(Default, TypePath)]
@@ -93,7 +102,7 @@ impl AssetLoader for PuzzleDefLoader {
         &self,
         reader: &mut dyn Reader,
         _settings: &(),
-        _load_context: &mut LoadContext<'_>,
+        load_context: &mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
@@ -102,7 +111,12 @@ impl AssetLoader for PuzzleDefLoader {
             .with_default_extension(ron::extensions::Extensions::IMPLICIT_SOME)
             .with_default_extension(ron::extensions::Extensions::UNWRAP_VARIANT_NEWTYPES);
 
-        let puzzle_def = options.from_bytes::<PuzzleDef>(&bytes)?;
+        let mut puzzle_def = options.from_bytes::<PuzzleDef>(&bytes)?;
+
+        if let Some(initial_layout) = &puzzle_def.initial_layout {
+            let gltf_path = initial_layout.path().to_owned();
+            puzzle_def.initial_layout_handle = Some(load_context.load(gltf_path));
+        }
 
         Ok(puzzle_def)
     }

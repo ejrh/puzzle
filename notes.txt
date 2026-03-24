@@ -1,0 +1,3 @@
+To export to blender file as Gltf:
+
+    \apps\blender\blender --background art\puzzle.blend --python-text "ExportToGltf"
