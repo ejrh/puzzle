@@ -30,7 +30,7 @@ impl LogicState {
 
     pub fn clicked(&mut self, entity: Entity, name: &str, primary: bool) -> Vec<Instruction> {
         if primary {
-            if self.current_zone == "z-main" && (name == "z-hanging-key" || name == "z-chest") {
+            if self.current_zone == "z-main" && (name == "z-hanging-key" || name == "z-painting" || name == "z-chest") {
                 return self.move_to_zone(name, 4.0);
             }
 
@@ -38,7 +38,7 @@ impl LogicState {
                 info!("clicked key");
             }
         } else {
-            if self.current_zone == "z-hanging-key" || self.current_zone == "z-chest" {
+            if self.current_zone == "z-hanging-key" || self.current_zone == "z-painting" || self.current_zone == "z-chest" {
                 return self.move_to_zone("z-main", 2.0);
             }
         }

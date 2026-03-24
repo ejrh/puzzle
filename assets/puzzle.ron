@@ -8,15 +8,24 @@ PuzzleDef(
                 radius: 0.25,
             ),
         ),
+        "z-painting": Zone(
+            clickable: Clickable(
+                radius: 0.75,
+            ),
+        ),
         "z-chest": Zone(
             clickable: Clickable(
-                radius: 1.5,
+                radius: 1.25,
             ),
         ),
         "i-key": Item(
             gltf_scene: "puzzle.gltf#Key",
             state: Open,
             decoration: Rotating,
+        ),
+        "i-painting": Item(
+            gltf_scene: "puzzle.gltf#Painting",
+            state: Locked,
         ),
         "i-chest": Item(
             gltf_scene: "puzzle.gltf#Chest",
