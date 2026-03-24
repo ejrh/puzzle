@@ -1,12 +1,13 @@
 use bevy::app::{App, Plugin, Startup, Update};
-use bevy::camera_controller::free_camera::{FreeCameraPlugin, FreeCameraState};
+use bevy::camera::primitives::Aabb;
+use bevy::camera_controller::free_camera::FreeCameraState;
 use bevy::color::Color;
 use bevy::ecs::{
     error::Result,
-    query::{With},
+    query::{With, Without},
     reflect::ReflectResource,
     resource::Resource,
-    schedule::{IntoScheduleConfigs, SystemCondition},
+    schedule::{common_conditions::resource_changed, IntoScheduleConfigs, SystemCondition},
     system::Query,
     world::World,
     system::{Res, ResMut},
@@ -15,7 +16,9 @@ use bevy::gizmos::gizmos::Gizmos;
 use bevy::input::{ButtonInput, keyboard::KeyCode};
 use bevy::light::{PointLight, SpotLight};
 use bevy::math::Vec3;
-use bevy::prelude::{resource_changed, Commands, Single};
+use bevy::mesh::Mesh3d;
+use bevy::pbr::{MeshMaterial3d, StandardMaterial};
+use bevy::picking::Pickable;
 use bevy::reflect::Reflect;
 use bevy::state::{
     app::AppExtStates,
@@ -54,6 +57,7 @@ struct DebugOptions {
     world_inspector: bool,
     free_camera: bool,
     show_lights: bool,
+    show_pickables: bool,
 }
 
 impl Default for DebugOptions {
@@ -63,6 +67,7 @@ impl Default for DebugOptions {
             world_inspector: true,
             free_camera: false,
             show_lights: false,
+            show_pickables: false,
         }
     }
 }
@@ -85,7 +90,8 @@ impl Plugin for DebugPlugin {
         app
             .add_systems(EguiPrimaryContextPass, world_stats.run_if(debug_option!(world_stats)))
             .add_plugins(WorldInspectorPlugin::new().run_if(debug_option!(world_inspector)))
-            .add_systems(Update, show_lights.run_if(debug_option!(show_lights)));
+            .add_systems(Update, show_lights.run_if(debug_option!(show_lights)))
+            .add_systems(Update, show_pickables.run_if(debug_option!(show_pickables)));
 
         app
             .add_systems(Update, update_free_camera.run_if(resource_changed::<DebugOptions>));
@@ -123,6 +129,7 @@ fn debug_options_ui(
                 ui.checkbox(&mut options.free_camera, "Free Camera");
                 ui.heading("Gizmos");
                 ui.checkbox(&mut options.show_lights, "Show Lights");
+                ui.checkbox(&mut options.show_pickables, "Show Pickables");
                 ui.heading("Logging");
             });
         });
@@ -162,6 +169,7 @@ fn world_stats(
                     row(ui, "Components", world.components().len());
                     row(ui, "Archetypes", world.archetypes().len());
                     row(ui, "UI Nodes", world.query::<&Node>().iter(world).count());
+                    row(ui, "Pickables", world.query::<&Pickable>().iter(world).count());
                 });
             })
         });
@@ -191,5 +199,17 @@ fn show_lights(
     for (_light, transform) in point_lights.iter() {
         let point = transform.translation();
         gizmos.sphere(point, 1.0, Color::srgb(1.0, 1.0, 0.0));
+    }
+}
+
+fn show_pickables(
+    pickables: Query<(&Aabb, &GlobalTransform), (With<Mesh3d>, With<Pickable>, Without<MeshMaterial3d<StandardMaterial>>)>,
+    mut gizmos: Gizmos,
+) {
+    for (aabb, transform) in pickables.iter() {
+        let centre = transform.transform_point(aabb.center.into());
+        let scale = transform.scale() * aabb.half_extents.to_vec3();
+        let scale= scale.element_sum() / 3.0;
+        gizmos.sphere(centre, scale, Color::srgba(0.0, 0.5, 0.25, 0.25));
     }
 }
