@@ -8,6 +8,7 @@ use crate::logic::action::{Constant, Instruction};
 #[derive(Debug, Resource, Reflect)]
 #[reflect(Resource)]
 pub struct LogicState {
+    pub last_action: f32,
     puzzle_id: Entity,
     current_zone: String,
     got_key: bool,
@@ -16,6 +17,7 @@ pub struct LogicState {
 impl Default for LogicState {
     fn default() -> Self {
         LogicState {
+            last_action: 0.0,
             puzzle_id: Entity::PLACEHOLDER,
             current_zone: "".into(),
             got_key: false,

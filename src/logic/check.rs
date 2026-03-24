@@ -1,17 +1,26 @@
 use bevy::log::{info, warn};
-use bevy::prelude::{BevyError, ChildOf, Commands, Entity, GlobalTransform, In, MessageReader, Name, Query, ResMut, Transform, World};
+use bevy::prelude::{BevyError, ChildOf, Commands, Entity, GlobalTransform, In, MessageReader, Name, Query, Res, ResMut, Transform, World};
+use bevy::time::Time;
+
 use crate::item::Rotating;
 use crate::logic::action::{Constant, Instruction};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
 use crate::utils::movement::MovingTo;
 
+const LOGIC_REST_SECS: f32 = 0.5;
+
 pub fn check_logic(
     mut messages: MessageReader<LogicMessage>,
     names: Query<&Name>,
     mut state: ResMut<LogicState>,
+    time: Res<Time>,
     mut commands: Commands,
 ) {
+    if messages.is_empty() { return; }
+
+    let mut resting = time.elapsed_secs() - state.last_action < LOGIC_REST_SECS;
+
     let mut actions = Vec::new();
 
     for msg in messages.read() {
@@ -19,12 +28,21 @@ pub fn check_logic(
         let new_actions = match *msg {
             LogicMessage::CreatedPuzzle(entity) => state.created(entity),
             LogicMessage::Clicked(entity, primary) => {
+                if resting {
+                    info!("Ignoring click while resting");
+                    continue;
+                }
                 let name = names.get(entity).map(|n| n.as_str()).unwrap_or("?");
                 info!("Clicked entity: {:?} {}", entity, name);
 
                 state.clicked(entity, name, primary)
             }
         };
+        if !new_actions.is_empty() {
+            info!("Generated {} new actions", new_actions.len());
+            state.last_action = time.elapsed_secs();
+            resting = true;
+        }
         actions.extend(new_actions);
     }
 
