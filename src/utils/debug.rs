@@ -1,4 +1,5 @@
 use bevy::app::{App, Plugin, Startup, Update};
+use bevy::camera_controller::free_camera::{FreeCameraPlugin, FreeCameraState};
 use bevy::color::Color;
 use bevy::ecs::{
     error::Result,
@@ -14,6 +15,7 @@ use bevy::gizmos::gizmos::Gizmos;
 use bevy::input::{ButtonInput, keyboard::KeyCode};
 use bevy::light::{PointLight, SpotLight};
 use bevy::math::Vec3;
+use bevy::prelude::{resource_changed, Commands, Single};
 use bevy::reflect::Reflect;
 use bevy::state::{
     app::AppExtStates,
@@ -50,6 +52,7 @@ impl DebugState {
 struct DebugOptions {
     world_stats: bool,
     world_inspector: bool,
+    free_camera: bool,
     show_lights: bool,
 }
 
@@ -58,6 +61,7 @@ impl Default for DebugOptions {
         Self {
             world_stats: true,
             world_inspector: true,
+            free_camera: false,
             show_lights: false,
         }
     }
@@ -82,6 +86,9 @@ impl Plugin for DebugPlugin {
             .add_systems(EguiPrimaryContextPass, world_stats.run_if(debug_option!(world_stats)))
             .add_plugins(WorldInspectorPlugin::new().run_if(debug_option!(world_inspector)))
             .add_systems(Update, show_lights.run_if(debug_option!(show_lights)));
+
+        app
+            .add_systems(Update, update_free_camera.run_if(resource_changed::<DebugOptions>));
     }
 }
 
@@ -113,6 +120,7 @@ fn debug_options_ui(
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.checkbox(&mut options.world_stats, "World Stats");
                 ui.checkbox(&mut options.world_inspector, "World Inspector");
+                ui.checkbox(&mut options.free_camera, "Free Camera");
                 ui.heading("Gizmos");
                 ui.checkbox(&mut options.show_lights, "Show Lights");
                 ui.heading("Logging");
@@ -157,6 +165,15 @@ fn world_stats(
                 });
             })
         });
+}
+
+fn update_free_camera(
+    debug_options: Res<DebugOptions>,
+    mut cameras: Query<&mut FreeCameraState>,
+) {
+    for mut state in cameras.iter_mut() {
+        state.enabled = debug_options.free_camera;
+    }
 }
 
 fn show_lights(
