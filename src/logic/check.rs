@@ -3,7 +3,7 @@ use bevy::prelude::{BevyError, ChildOf, Commands, Entity, GlobalTransform, In, M
 use bevy::time::Time;
 
 use crate::item::Rotating;
-use crate::logic::action::{Constant, Instruction};
+use crate::logic::action::{Constant, Instruction, Stack};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
 use crate::utils::movement::MovingTo;
@@ -52,8 +52,8 @@ pub fn check_logic(
 pub fn run_actions(
     actions: In<Vec<Instruction>>,
     world: &mut World,
-) {
-    let mut stack = Vec::new();
+) -> Result<(), BevyError> {
+    let mut stack = Stack::default();
 
     for action in actions.iter() {
         info!("Performing action: {:?}", action);
@@ -61,35 +61,28 @@ pub fn run_actions(
             Instruction::Lookup(name) => {
                 let Some(id) = world.query::<(Entity, &Name)>().iter(world)
                     .find_map(|(id, n)| (n.as_str() == name).then_some(id)).iter().cloned().next()
-                else { warn!("Can't find entity for name {}", name); return; };
+                else { warn!("Can't find entity for name {}", name); return Err("bad".into()); };
                 stack.push(Constant::Entity(id));
             },
             Instruction::Constant(constant) => {
                 stack.push(constant.clone());
             },
             Instruction::MoveTo => {
-                let Some(Constant::Float(duration)) = stack.pop()
-                    else { warn!("Stack does not contain a float"); return; };
-                let Some(Constant::Entity(target_id)) = stack.pop()
-                    else { warn!("Stack does not contain an entity"); return; };
-                let Some(Constant::Entity(entity_id)) = stack.pop()
-                    else { warn!("Stack does not contain an entity"); return; };
+                let (entity_id, target_id, duration) = stack.pop3()?;
                 world.commands().run_system_cached_with(move_to, (entity_id, target_id, duration));
             },
             Instruction::ReparentInPlace => {
-                let Some(Constant::Entity(new_parent_id)) = stack.pop()
-                else { warn!("Stack does not contain an entity"); return; };
-                let Some(Constant::Entity(entity_id)) = stack.pop()
-                else { warn!("Stack does not contain an entity"); return; };
+                let (entity_id, new_parent_id) = stack.pop2()?;
                 world.commands().run_system_cached_with(reparent_in_place, (entity_id, new_parent_id));
             },
             Instruction::RemoveDecoration => {
-                let Some(Constant::Entity(entity_id)) = stack.pop()
-                else { warn!("Stack does not contain an entity"); return; };
+                let entity_id = stack.pop1()?;
                 world.commands().run_system_cached_with(remove_decoration, entity_id);
             },
         }
     }
+    
+    Ok(())
 }
 
 pub fn move_to(
