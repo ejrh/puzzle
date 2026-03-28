@@ -38,7 +38,7 @@ impl LogicState {
                 return self.move_to_zone(name, 4.0);
             }
 
-            if self.current_zone == "z-hanging-key" && name == "i-key" {
+            if self.current_zone == "z-hanging-key" && name == "i-key" && !self.got_key {
                 return self.pick_up_key();
             }
         } else {
