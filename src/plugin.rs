@@ -10,6 +10,7 @@ use bevy::math::{EulerRot, Quat, Vec3};
 use bevy::prelude::{ChildOf, MeshPickingPlugin, Name, Transform};
 
 use crate::clickable::ClickablePlugin;
+use crate::draggable::DraggablePlugin;
 use crate::item::ItemPlugin;
 use crate::logic::LogicPlugin;
 use crate::puzzle::{Puzzle, PuzzlePlugin};
@@ -32,6 +33,7 @@ impl Plugin for MainPlugin {
 
         app
             .add_plugins(ClickablePlugin)
+            .add_plugins(DraggablePlugin)
             .add_plugins(ItemPlugin)
             .add_plugins(LogicPlugin)
             .add_plugins(PuzzlePlugin);

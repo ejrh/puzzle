@@ -21,4 +21,5 @@ impl Plugin for LogicPlugin {
 pub enum LogicMessage {
     CreatedPuzzle(Entity),
     Clicked(Entity, bool),
+    Dragged(Entity),
 }

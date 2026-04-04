@@ -18,6 +18,11 @@ PuzzleDef(
                 radius: 1.25,
             ),
         ),
+        "z-cryptex": Zone(
+            clickable: Clickable(
+                radius: 0.75,
+            ),
+        ),
         "i-key": Item(
             gltf_scene: "puzzle.gltf#Key",
             state: Open,
@@ -37,6 +42,10 @@ PuzzleDef(
         ),
         "p-floor": Item(
             gltf_scene: "puzzle.gltf#Floor",
+            state: Locked,
+        ),
+        "i-cryptex": Item(
+            gltf_scene: "puzzle.gltf#Cryptex",
             state: Locked,
         ),
     }

@@ -1,4 +1,5 @@
 mod clickable;
+mod draggable;
 mod item;
 mod logic;
 mod plugin;
