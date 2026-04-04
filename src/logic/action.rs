@@ -1,10 +1,11 @@
-use bevy::prelude::Entity;
+use bevy::prelude::{Entity, Transform};
 use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Instruction {
     Lookup(String),
     Constant(Constant),
+    GetTransform,
     MoveTo,
     ReparentInPlace,
     RemoveDecoration,
@@ -57,6 +58,7 @@ impl Stack {
 pub enum Constant {
     Entity(Entity),
     Float(f32),
+    Transform(Transform),
 }
 
 macro_rules! impl_froms {
@@ -94,4 +96,4 @@ macro_rules! impl_froms {
     };
 }
 
-impl_froms!(Entity Float(f32));
+impl_froms!(Entity Float(f32) Transform);

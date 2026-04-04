@@ -55,6 +55,7 @@ impl LogicState {
         vec![
             Instruction::Lookup("camera".into()),
             Instruction::Lookup(zone_name.into()),
+            Instruction::GetTransform,
             Instruction::Constant(Constant::Float(duration)),
             Instruction::MoveTo,
         ]
@@ -73,6 +74,7 @@ impl LogicState {
 
             Instruction::Lookup("i-key".into()),
             Instruction::Lookup("hand".into()),
+            Instruction::GetTransform,
             Instruction::Constant(Constant::Float(0.5)),
             Instruction::MoveTo,
         ]

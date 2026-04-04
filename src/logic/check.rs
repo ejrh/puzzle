@@ -67,9 +67,15 @@ pub fn run_actions(
             Instruction::Constant(constant) => {
                 stack.push(constant.clone());
             },
+            Instruction::GetTransform => {
+                let entity_id = stack.pop1()?;
+                let Ok(transform) = world.query::<&Transform>().get(world, entity_id)
+                else { warn!("Can't find transform for entity {}", entity_id); return Err("bad".into()); };
+                stack.push(transform.clone().into());                
+            },
             Instruction::MoveTo => {
-                let (entity_id, target_id, duration) = stack.pop3()?;
-                world.commands().run_system_cached_with(move_to, (entity_id, target_id, duration));
+                let (entity_id, transform, duration) = stack.pop3()?;
+                world.commands().run_system_cached_with(move_to, (entity_id, transform, duration));
             },
             Instruction::ReparentInPlace => {
                 let (entity_id, new_parent_id) = stack.pop2()?;
@@ -86,15 +92,13 @@ pub fn run_actions(
 }
 
 pub fn move_to(
-    input: In<(Entity, Entity, f32)>,
-    transforms: Query<&Transform>,
+    input: In<(Entity, Transform, f32)>,
     mut commands: Commands,
 ) -> Result<(), BevyError> {
-    let (entity_id, target_id, duration) = *input;
-    let target = transforms.get(target_id)?;
+    let (entity_id, transform, duration) = *input;
 
     commands.entity(entity_id).insert(
-        MovingTo::new(*target, duration),
+        MovingTo::new(transform, duration),
     );
 
     Ok(())
