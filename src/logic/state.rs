@@ -7,7 +7,7 @@ use bevy::math::EulerRot;
 use bevy::prelude::{Entity, Resource};
 use bevy::reflect::Reflect;
 
-use crate::logic::action::{Constant, Instruction};
+use crate::logic::action::Instruction;
 
 #[derive(Debug, Resource, Reflect)]
 #[reflect(Resource)]
@@ -72,7 +72,7 @@ impl LogicState {
             Instruction::Lookup("camera".into()),
             Instruction::Lookup(zone_name.into()),
             Instruction::GetTransform,
-            Instruction::Constant(Constant::Float(duration)),
+            Instruction::Push(duration.into()),
             Instruction::MoveTo,
         ]
     }
@@ -91,7 +91,7 @@ impl LogicState {
             Instruction::Lookup("i-key".into()),
             Instruction::Lookup("hand".into()),
             Instruction::GetTransform,
-            Instruction::Constant(Constant::Float(0.5)),
+            Instruction::Push(0.5.into()),
             Instruction::MoveTo,
         ]
     }
@@ -118,16 +118,16 @@ impl LogicState {
             let endcap_transform = Transform::from_xyz(-4.0, 0.0, 0.0);
             actions.extend([
                 Instruction::Lookup("i-endcap".into()),
-                Instruction::Constant(endcap_transform.into()),
-                Instruction::Constant(0.5.into()),
+                Instruction::Push(endcap_transform.into()),
+                Instruction::Push(0.5.into()),
                 Instruction::MoveTo,
             ]);
         }
 
         actions.extend([
             Instruction::Lookup(name.into()),
-            Instruction::Constant(new_transform.into()),
-            Instruction::Constant(0.1.into()),
+            Instruction::Push(new_transform.into()),
+            Instruction::Push(0.1.into()),
             Instruction::MoveTo,
         ]);
 

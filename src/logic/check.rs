@@ -3,7 +3,7 @@ use bevy::prelude::{BevyError, ChildOf, Commands, Entity, GlobalTransform, In, M
 use bevy::time::Time;
 
 use crate::item::Rotating;
-use crate::logic::action::{Constant, Instruction, Stack};
+use crate::logic::action::{Instruction, Stack};
 use crate::logic::LogicMessage;
 use crate::logic::state::LogicState;
 use crate::utils::movement::MovingTo;
@@ -78,16 +78,16 @@ pub fn run_actions(
                 let Some(id) = world.query::<(Entity, &Name)>().iter(world)
                     .find_map(|(id, n)| (n.as_str() == name).then_some(id)).iter().cloned().next()
                 else { warn!("Can't find entity for name {}", name); return Err("bad".into()); };
-                stack.push(Constant::Entity(id));
+                stack.push(id);
             },
-            Instruction::Constant(constant) => {
+            Instruction::Push(constant) => {
                 stack.push(constant.clone());
             },
             Instruction::GetTransform => {
                 let entity_id = stack.pop1()?;
                 let Ok(transform) = world.query::<&Transform>().get(world, entity_id)
                 else { warn!("Can't find transform for entity {}", entity_id); return Err("bad".into()); };
-                stack.push(transform.clone().into());                
+                stack.push(*transform);
             },
             Instruction::MoveTo => {
                 let (entity_id, transform, duration) = stack.pop3()?;

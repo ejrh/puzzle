@@ -1,10 +1,12 @@
+use std::fmt::{Debug, Display};
 use bevy::prelude::{Entity, Transform};
+use derive_more::Display;
 use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Instruction {
     Lookup(String),
-    Constant(Constant),
+    Push(Constant),
     GetTransform,
     MoveTo,
     ReparentInPlace,
@@ -24,8 +26,8 @@ pub enum StackError {
 pub struct Stack(Vec<Constant>);
 
 impl Stack {
-    pub fn push(&mut self, constant: Constant) {
-        self.0.push(constant);
+    pub fn push(&mut self, constant: impl Into<Constant>) {
+        self.0.push(constant.into());
     }
 
     pub fn pop(&mut self) -> Result<Constant, StackError> {
@@ -54,11 +56,20 @@ impl Stack {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Display, PartialEq)]
 pub enum Constant {
+    #[display("{_0:?}")]
     Entity(Entity),
+    #[display("{_0:?}")]
     Float(f32),
+    #[display("{_0:?}")]
     Transform(Transform),
+}
+
+impl Debug for Constant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
 }
 
 macro_rules! impl_froms {
