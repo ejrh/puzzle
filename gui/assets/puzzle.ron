@@ -1,0 +1,52 @@
+PuzzleDef(
+    initial_layout: "puzzle.gltf#PuzzleLayout",
+    parts: {
+        "z-main": Zone(
+        ),
+        "z-hanging-key": Zone(
+            clickable: Clickable(
+                radius: 0.25,
+            ),
+        ),
+        "z-painting": Zone(
+            clickable: Clickable(
+                radius: 0.75,
+            ),
+        ),
+        "z-chest": Zone(
+            clickable: Clickable(
+                radius: 1.25,
+            ),
+        ),
+        "z-cryptex": Zone(
+            clickable: Clickable(
+                radius: 0.75,
+            ),
+        ),
+        "i-key": Item(
+            gltf_scene: "puzzle.gltf#Key",
+            state: Open,
+            decoration: Rotating,
+        ),
+        "i-painting": Item(
+            gltf_scene: "puzzle.gltf#Painting",
+            state: Locked,
+        ),
+        "i-chest": Item(
+            gltf_scene: "puzzle.gltf#Chest",
+            state: Locked,
+        ),
+        "i-lid": Item(
+            gltf_scene: "puzzle.gltf#Lid",
+            state: Locked,
+        ),
+        "p-floor": Item(
+            gltf_scene: "puzzle.gltf#Floor",
+            state: Locked,
+        ),
+        "i-cryptex": Item(
+            gltf_scene: "puzzle.gltf#Cryptex",
+            state: Locked,
+        ),
+    }
+)
